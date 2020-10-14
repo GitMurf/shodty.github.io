@@ -102,7 +102,7 @@ function  addLinkElement(pageUrl) {
         var children = parent.children[0];
         createLinkElement(children, pageUrl, 1);
     }
-    else { // checks if the user is zoomed into a bullet
+    else if(parent != null) {  // gets page name if not on daily pages
         var parent = document.getElementsByClassName("zoom-path-view")[0];
         var children = parent.children[0].children[0].children[0];
         createLinkElement(children, pageUrl, 2);
