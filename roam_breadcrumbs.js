@@ -1,3 +1,8 @@
+loadBreadcrumbScript();
+function loadBreadcrumbScript() {
+    // Don't show on mobile (spm added)
+    if(/Android|iPhone/i.test(navigator.userAgent)){return;}
+
 initiliaze();
 
 function initiliaze() { /*removes any residual instances of breadcrumb feature*/
@@ -5,17 +10,20 @@ function initiliaze() { /*removes any residual instances of breadcrumb feature*/
     document.removeEventListener("keydown", hotKeyEvent);
     var elem = document.querySelector('#recentLinks');
     var btn = document.querySelector('#closeCrumbs');
-  	if(elem != null) { elem.parentNode.removeChild(elem); }
+    if(elem != null) { elem.parentNode.removeChild(elem); }
     if(btn != null) { btn.parentNode.removeChild(btn); }
 }
 
 //#recentLinks div to hold breadcrumbs
 var breadCrumbDiv = document.createElement('div'); // #recentLinks div to hold breadcrumbs
 breadCrumbDiv.id = 'recentLinks';
+// SPM moving this to CSS instead of hardcoding
+/*
 breadCrumbDiv.style.position = 'absolute';
 breadCrumbDiv.style.left = '228px';
 breadCrumbDiv.style.height = '45px';
 breadCrumbDiv.style.padding = '10px';
+*/
 var topBarDiv = document.getElementsByClassName("roam-topbar")[0];
 topBarDiv.appendChild(breadCrumbDiv); //put it in the topbar div for z-index purposes
 window.addEventListener("hashchange", timedFunction);
@@ -23,17 +31,24 @@ window.addEventListener("hashchange", timedFunction);
 //div + button to stop/start listener, & show/hide breadcrumbs
 var toggleDiv = document.createElement('div');
 toggleDiv.id = 'closeCrumbs';
+// SPM moving this to CSS instead of hardcoding
+/*
 toggleDiv.style.position = 'absolute';
 toggleDiv.style.left = '212px';
 toggleDiv.style.height = '45px';
 toggleDiv.style.padding = '10px';
+*/
 topBarDiv.appendChild(toggleDiv);
 
 var toggleButton = document.createElement("button");
 toggleButton.id = 'buttonLayer';
+// SPM moving this to CSS instead of hardcoding
+toggleButton.className = 'bcShow';
+/*
 toggleButton.style.border = '0';
 toggleButton.style.color = 'green';
 toggleButton.style.fontSize = '24px';
+*/
 toggleButton.innerHTML = "‣";
 toggleDiv.appendChild(toggleButton);
 toggleButton.onclick = turnOnOff;
@@ -47,12 +62,16 @@ function turnOnOff() {
     onOff = !onOff;
     if (!onOff) {
         breadCrumbDiv.style.display = 'none';
-        toggleButton.style.color = 'grey';
-      	window.removeEventListener("hashchange", timedFunction);
+        // SPM moving this to CSS instead of hardcoding
+        toggleButton.className = 'bcHidden';
+        /*toggleButton.style.color = 'grey';*/
+        window.removeEventListener("hashchange", timedFunction);
     } else {
         breadCrumbDiv.style.display = 'block';
-        toggleButton.style.color = 'green';
-      	window.addEventListener("hashchange", timedFunction);
+        // SPM moving this to CSS instead of hardcoding
+        toggleButton.className = 'bcShow';
+        /*toggleButton.style.color = 'green';*/
+        window.addEventListener("hashchange", timedFunction);
     }
 }
 
@@ -110,13 +129,14 @@ function createLinkElement(children, pageUrl, urlCase) {
 window.addEventListener ("keyup", hotKeyEvent);
 
 function hotKeyEvent(zEvent) {
-    if (zEvent.altKey || zEvent.ctrlKey  &&  zEvent.key === "1") { clickLink(1); }
-    if (zEvent.altKey || zEvent.ctrlKey  &&  zEvent.key === "2") { clickLink(2); }
-    if (zEvent.altKey || zEvent.ctrlKey  &&  zEvent.key === "3") { clickLink(3); }
-    if (zEvent.altKey || zEvent.ctrlKey  &&  zEvent.key === "4") { clickLink(4); }
-    if (zEvent.altKey || zEvent.ctrlKey  &&  zEvent.key === "5") { clickLink(5); }
-    if (zEvent.altKey || zEvent.ctrlKey  &&  zEvent.key === "6") { clickLink(6); }
-    if (zEvent.altKey || zEvent.ctrlKey  &&  zEvent.key === "7") { clickLink(7); }
+    // changed/fixed by shawn as had alt and ctrl key as OR and wasn't in parentheses //
+    if (zEvent.altKey  &&  zEvent.key === "1") { clickLink(1); }
+    if (zEvent.altKey  &&  zEvent.key === "2") { clickLink(2); }
+    if (zEvent.altKey  &&  zEvent.key === "3") { clickLink(3); }
+    if (zEvent.altKey  &&  zEvent.key === "4") { clickLink(4); }
+    if (zEvent.altKey  &&  zEvent.key === "5") { clickLink(5); }
+    if (zEvent.altKey  &&  zEvent.key === "6") { clickLink(6); }
+    if (zEvent.altKey  &&  zEvent.key === "7") { clickLink(7); }
 }
 
 function clickLink(n) {
@@ -138,3 +158,4 @@ var simulateClick = function (elem) {
 	// If cancelled, don't dispatch our event
 	var canceled = !elem.dispatchEvent(evt);
 };
+}
