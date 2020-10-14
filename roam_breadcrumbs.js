@@ -82,7 +82,7 @@ function timedFunction() {
 
 function addPageToRecent() {
     var pageUrl = window.location.href; //snags the url for said page
-    if (urlArray.slice(0, 8).includes(pageUrl) == false) { //checks if the link already exists in the last 5 links
+    if (urlArray.slice(0, 8).includes(pageUrl) == false) { //checks if the link already exists in the last 9 links
         addLinkElement(pageUrl);
     }
     else {
@@ -95,7 +95,7 @@ function addPageToRecent() {
 
 function  addLinkElement(pageUrl) {
     var parent = document.getElementsByClassName("rm-title-display")[0]; //snags the page title
-    if(pageUrl == 'https://roamresearch.com/#/app/shodty') { //checks if they are on daily notes page
+    if(pageUrl == 'https://roamresearch.com/#/app/samdynamics') { //checks if they are on daily notes page
         createLinkElement(parent, pageUrl, 0);
     }
     if(parent != null) {  // gets page name if not on daily pages
@@ -112,12 +112,12 @@ function  addLinkElement(pageUrl) {
 function createLinkElement(children, pageUrl, urlCase) {
     var lastNine = pageUrl.substr(pageUrl.length - 9);
     if(urlCase == 0) {var innerChild = "<span style='color: #FF5E00;'>✹</span> Daily Notes" }
-    else if(urlCase == 1) { var innerChild = children.innerHTML.substring(0, 25) }
-    else if(urlCase == 2) { var innerChild =  "<span style='color: #0D9BDB;'>🞇</span> " + children.innerHTML.substring(0, 20) }
+    else if(urlCase == 1) { var innerChild = children.innerText.substring(0, 25) }
+    else if(urlCase == 2) { var innerChild =  "<span style='color: #0D9BDB;'>🞇</span> " + children.innerText.substring(0, 20) }
     var linkElement = "<a id='" + lastNine + "' href='" + pageUrl + "' class='recentLink' style='padding: 0 10px;'>" + innerChild + "</a>"; //adds <a> element to array, maximum 25 chars, increase substring size if you wish
     urlArray.unshift(pageUrl);
     linksArray.unshift(linkElement);
-    linksArray = linksArray.slice(0, 8); //reduces the array to to 5 link max, in crease if you wish
+    linksArray = linksArray.slice(0, 8); //reduces the array to to 9 link max, increase if you wish
     breadCrumbDiv.innerHTML = linksArray.slice(1, 8).join("‣"); //puts the <a> array into the breadCrumbDiv
     var linkElements = document.getElementsByClassName("recentLink");
     for(i=0; i<linkElements.length; i++){
