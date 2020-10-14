@@ -5,6 +5,8 @@ function loadBreadcrumbScript() {
 
 initiliaze();
 
+var debugMode = true;
+
 function initiliaze() { /*removes any residual instances of breadcrumb feature*/
     window.removeEventListener("hashchange", timedFunction);
     document.removeEventListener("keydown", hotKeyEvent);
@@ -55,6 +57,8 @@ toggleButton.onclick = turnOnOff;
 
 var urlArray = [];
 var linksArray = [];
+var todayArray = [];
+var bFoundToday = false;
 var onOff = true;
 var n = 0;
 //this function flips the toggle switch, then shows/hides the breadcrumbs and adds/removes listener
@@ -75,6 +79,21 @@ function turnOnOff() {
     }
 }
 
+//getTodays date
+function getTodayDate() {
+    var phToday = new Date(new Date().getFullYear(),new Date().getMonth() , new Date().getDate())
+    return (Date.parse(phToday))
+}
+
+//Convert string to date
+function convertToDate(dateString) {
+    var origDateString = dateString
+    var newDateString = origDateString.trim().split("[").join("").split("]").join("").replace("#","")
+    newDateString = newDateString.replace("st,",",").replace("rd,",",").replace("th,",",").replace("nd,",",")
+    var foundDate = Date.parse(newDateString)
+    return foundDate
+}
+
 //had to delay function for adding breadcrumbs to give page time to load
 function timedFunction() {
     setTimeout(addPageToRecent, 150)
@@ -82,6 +101,7 @@ function timedFunction() {
 
 function addPageToRecent() {
     var pageUrl = window.location.href; //snags the url for said page
+    if(debugMode){console.log(pageUrl)}
     if (urlArray.slice(0, 8).includes(pageUrl) == false) { //checks if the link already exists in the last 9 links
         addLinkElement(pageUrl);
     }
@@ -93,16 +113,17 @@ function addPageToRecent() {
     }
 }
 
-function  addLinkElement(pageUrl) {
+function addLinkElement(pageUrl) {
     var parent = document.getElementsByClassName("rm-title-display")[0]; //snags the page title
+    if(debugMode){console.log(parent)}
     if(pageUrl == 'https://roamresearch.com/#/app/samdynamics') { //checks if they are on daily notes page
         createLinkElement(parent, pageUrl, 0);
     }
-    if(parent != null) {  // gets page name if not on daily pages
+    else if(parent != null) {  // gets page name if not on daily pages
         var children = parent.children[0];
         createLinkElement(children, pageUrl, 1);
     }
-    else if(parent != null) {  // gets page name if not on daily pages
+    else { // checks if the user is zoomed into a bullet
         var parent = document.getElementsByClassName("zoom-path-view")[0];
         var children = parent.children[0].children[0].children[0];
         createLinkElement(children, pageUrl, 2);
@@ -110,6 +131,10 @@ function  addLinkElement(pageUrl) {
 }
 
 function createLinkElement(children, pageUrl, urlCase) {
+    if(debugMode){console.log(children)}
+    if(debugMode){console.log(pageUrl)}
+    if(debugMode){console.log(urlCase)}
+
     var lastNine = pageUrl.substr(pageUrl.length - 9);
     if(urlCase == 0) {var innerChild = "<span style='color: #FF5E00;'>✹</span> Daily Notes" }
     else if(urlCase == 1) { var innerChild = children.innerText.substring(0, 25) }
@@ -117,8 +142,26 @@ function createLinkElement(children, pageUrl, urlCase) {
     var linkElement = "<a id='" + lastNine + "' href='" + pageUrl + "' class='recentLink' style='padding: 0 10px;'>" + innerChild + "</a>"; //adds <a> element to array, maximum 25 chars, increase substring size if you wish
     urlArray.unshift(pageUrl);
     linksArray.unshift(linkElement);
-    linksArray = linksArray.slice(0, 8); //reduces the array to to 9 link max, increase if you wish
-    breadCrumbDiv.innerHTML = linksArray.slice(1, 8).join("‣"); //puts the <a> array into the breadCrumbDiv
+    linksArray = linksArray.slice(0, 8); //reduces the array to to 7 link max, increase if you wish
+    //If this is today's page, add to end of array
+    if(bFoundToday == false)
+    {
+        if(urlCase == 1)
+        {
+            if(convertToDate(innerChild) == getTodayDate())
+            {
+                bFoundToday = true;
+                todayArray.push(linkElement);
+                linksArray.unshift(todayArray[0]);
+            }
+        }
+    }
+    else
+    {
+        linksArray.unshift(todayArray[0]);
+    }
+
+    breadCrumbDiv.innerHTML = linksArray.slice(1).join("‣"); //puts the <a> array into the breadCrumbDiv
     var linkElements = document.getElementsByClassName("recentLink");
     for(i=0; i<linkElements.length; i++){
         var linkNumber = "<span style='color: #0087FF; padding-right: 3px;' class='linkNumber'>" + (i+1).toString() + "</span>";
@@ -137,6 +180,7 @@ function hotKeyEvent(zEvent) {
     if (zEvent.altKey  &&  zEvent.key === "5") { clickLink(5); }
     if (zEvent.altKey  &&  zEvent.key === "6") { clickLink(6); }
     if (zEvent.altKey  &&  zEvent.key === "7") { clickLink(7); }
+    if (zEvent.altKey  &&  zEvent.key === "8") { clickLink(8); }
 }
 
 function clickLink(n) {
@@ -158,4 +202,7 @@ var simulateClick = function (elem) {
 	// If cancelled, don't dispatch our event
 	var canceled = !elem.dispatchEvent(evt);
 };
+
+//Load the first time so the current page gets added to the breadcrumbs
+timedFunction()
 }
