@@ -5,7 +5,7 @@ function loadBreadcrumbScript() {
 
 initiliaze();
 
-var debugMode = true;
+var debugMode = false;
 
 function initiliaze() { /*removes any residual instances of breadcrumb feature*/
     window.removeEventListener("hashchange", timedFunction);
@@ -19,13 +19,6 @@ function initiliaze() { /*removes any residual instances of breadcrumb feature*/
 //#recentLinks div to hold breadcrumbs
 var breadCrumbDiv = document.createElement('div'); // #recentLinks div to hold breadcrumbs
 breadCrumbDiv.id = 'recentLinks';
-// SPM moving this to CSS instead of hardcoding
-/*
-breadCrumbDiv.style.position = 'absolute';
-breadCrumbDiv.style.left = '228px';
-breadCrumbDiv.style.height = '45px';
-breadCrumbDiv.style.padding = '10px';
-*/
 var topBarDiv = document.getElementsByClassName("roam-topbar")[0];
 topBarDiv.appendChild(breadCrumbDiv); //put it in the topbar div for z-index purposes
 window.addEventListener("hashchange", timedFunction);
@@ -33,28 +26,16 @@ window.addEventListener("hashchange", timedFunction);
 //div + button to stop/start listener, & show/hide breadcrumbs
 var toggleDiv = document.createElement('div');
 toggleDiv.id = 'closeCrumbs';
-// SPM moving this to CSS instead of hardcoding
-/*
-toggleDiv.style.position = 'absolute';
-toggleDiv.style.left = '212px';
-toggleDiv.style.height = '45px';
-toggleDiv.style.padding = '10px';
-*/
 topBarDiv.appendChild(toggleDiv);
 
 var toggleButton = document.createElement("button");
 toggleButton.id = 'buttonLayer';
-// SPM moving this to CSS instead of hardcoding
 toggleButton.className = 'bcShow';
-/*
-toggleButton.style.border = '0';
-toggleButton.style.color = 'green';
-toggleButton.style.fontSize = '24px';
-*/
 toggleButton.innerHTML = "‣";
 toggleDiv.appendChild(toggleButton);
 toggleButton.onclick = turnOnOff;
 
+var maxLinks = 7;
 var urlArray = [];
 var linksArray = [];
 var todayArray = [];
@@ -66,15 +47,11 @@ function turnOnOff() {
     onOff = !onOff;
     if (!onOff) {
         breadCrumbDiv.style.display = 'none';
-        // SPM moving this to CSS instead of hardcoding
         toggleButton.className = 'bcHidden';
-        /*toggleButton.style.color = 'grey';*/
         window.removeEventListener("hashchange", timedFunction);
     } else {
         breadCrumbDiv.style.display = 'block';
-        // SPM moving this to CSS instead of hardcoding
         toggleButton.className = 'bcShow';
-        /*toggleButton.style.color = 'green';*/
         window.addEventListener("hashchange", timedFunction);
     }
 }
@@ -100,15 +77,16 @@ function timedFunction() {
 }
 
 function addPageToRecent() {
-    var pageUrl = window.location.href; //snags the url for said page
+    var pageUrl = window.location.href; //Gets the URL of the page
+    if(bFoundToday){if(todayArray[1] == pageUrl){return}} //Skip if it is today's page since we already pin it to end
     if(debugMode){console.log(pageUrl)}
-    if (urlArray.slice(0, 8).includes(pageUrl) == false) { //checks if the link already exists in the last 9 links
+    if (urlArray.slice(0).includes(pageUrl) == false) { //checks if the link already exists
         addLinkElement(pageUrl);
     }
     else {
         var index = urlArray.indexOf(pageUrl);
-        urlArray.splice(index, 1);
-        linksArray.splice(index, 1);
+        urlArray.splice(index, 1); //Remove 1 item from urlArray
+        linksArray.splice(index, 1); //Remove 1 item from linksArray
         addLinkElement(pageUrl);
     }
 }
@@ -134,39 +112,58 @@ function createLinkElement(children, pageUrl, urlCase) {
     if(debugMode){console.log(children)}
     if(debugMode){console.log(pageUrl)}
     if(debugMode){console.log(urlCase)}
+    if(debugMode){console.log(urlArray)}
+    if(debugMode){console.log(linksArray)}
+    if(debugMode){console.log(todayArray)}
 
-    var lastNine = pageUrl.substr(pageUrl.length - 9);
+    var lastNine = pageUrl.substr(pageUrl.length - 9); //Get last 9 characters of page name to use as ID since it is ID of page in URL
     if(urlCase == 0) {var innerChild = "<span style='color: #FF5E00;'>✹</span> Daily Notes" }
     else if(urlCase == 1) { var innerChild = children.innerText.substring(0, 25) }
     else if(urlCase == 2) { var innerChild =  "<span style='color: #0D9BDB;'>🞇</span> " + children.innerText.substring(0, 20) }
     var linkElement = "<a id='" + lastNine + "' href='" + pageUrl + "' class='recentLink' style='padding: 0 10px;'>" + innerChild + "</a>"; //adds <a> element to array, maximum 25 chars, increase substring size if you wish
-    urlArray.unshift(pageUrl);
-    linksArray.unshift(linkElement);
-    linksArray = linksArray.slice(0, 8); //reduces the array to to 7 link max, increase if you wish
-    //If this is today's page, add to end of array
-    if(bFoundToday == false)
+    bThisIsToday = false
+
+    if(bFoundToday == false && urlCase == 1)
     {
-        if(urlCase == 1)
+        if(convertToDate(innerChild) == getTodayDate())
         {
-            if(convertToDate(innerChild) == getTodayDate())
-            {
-                bFoundToday = true;
-                todayArray.push(linkElement);
-                linksArray.unshift(todayArray[0]);
-            }
+            var linkElementToday = "<a id='" + 'todayDate' + "' href='" + pageUrl + "' class='recentLink' style='padding: 0 10px;'>" + innerChild + "</a>";
+            bFoundToday = true;
+            bThisIsToday = true
+            todayArray.push(linkElementToday);
+            todayArray.push(pageUrl);
         }
     }
-    else
+
+    if(bThisIsToday == false)
     {
-        linksArray.unshift(todayArray[0]);
+        urlArray.unshift(pageUrl); //Unshift adds item to start of array
+        linksArray.unshift(linkElement);
     }
 
-    breadCrumbDiv.innerHTML = linksArray.slice(1).join("‣"); //puts the <a> array into the breadCrumbDiv
+    linksArray = linksArray.slice(0, maxLinks); //reduces the array to 7 link max, increase if you wish
+    urlArray = urlArray.slice(0, maxLinks);
+
+    //if you assign an array to another variable and modify that variable's array elements, the original array is also modified.
+        //So instead you can use the slice() method which copies them as a new array and their own values (instead of references)
+        //https://www.dyn-web.com/javascript/arrays/value-vs-reference.php
+    var arrayToLoad = linksArray.slice(0);
+
+    if(bFoundToday)
+    {
+        arrayToLoad.push(todayArray[0]);
+    }
+
+    breadCrumbDiv.innerHTML = arrayToLoad.slice(1).join("‣"); //puts the <a> array into the breadCrumbDiv; don't show first one as current page
     var linkElements = document.getElementsByClassName("recentLink");
     for(i=0; i<linkElements.length; i++){
         var linkNumber = "<span style='color: #0087FF; padding-right: 3px;' class='linkNumber'>" + (i+1).toString() + "</span>";
-    linkElements[i].innerHTML = linkNumber + linkElements[i].innerHTML;
+        linkElements[i].innerHTML = linkNumber + linkElements[i].innerHTML;
     }
+    if(debugMode){console.log(urlArray)}
+    if(debugMode){console.log(linksArray)}
+    if(debugMode){console.log(todayArray)}
+    if(debugMode){console.log(linkElements)}
 }
 
 window.addEventListener ("keyup", hotKeyEvent);
@@ -204,5 +201,6 @@ var simulateClick = function (elem) {
 };
 
 //Load the first time so the current page gets added to the breadcrumbs
+if(debugMode){console.log('loaded first time')}
 timedFunction()
 }
