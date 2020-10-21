@@ -80,6 +80,7 @@ function timedFunction() {
 
 function addPageToRecent() {
     var pageUrl = window.location.href; //Gets the URL of the page
+    if(pageUrl == 'https://roamresearch.com/#/app/samdynamics/search'){return} //All Pages page in Roam... don't want in breadcrumb
     bSkipToday = false;
     if(bFoundToday){if(todayArray[1] == pageUrl){bSkipToday = true}} //Skip if it is today's page since we already pin it to end
     if(debugMode){console.log(pageUrl)}
