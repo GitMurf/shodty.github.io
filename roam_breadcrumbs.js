@@ -39,7 +39,9 @@ var maxLinks = 7;
 var urlArray = [];
 var linksArray = [];
 var todayArray = [];
+var arrayToLoad = [];
 var bFoundToday = false;
+var bSkipToday = false;
 var onOff = true;
 var n = 0;
 //this function flips the toggle switch, then shows/hides the breadcrumbs and adds/removes listener
@@ -78,33 +80,48 @@ function timedFunction() {
 
 function addPageToRecent() {
     var pageUrl = window.location.href; //Gets the URL of the page
-    if(bFoundToday){if(todayArray[1] == pageUrl){return}} //Skip if it is today's page since we already pin it to end
+    bSkipToday = false;
+    if(bFoundToday){if(todayArray[1] == pageUrl){bSkipToday = true}} //Skip if it is today's page since we already pin it to end
     if(debugMode){console.log(pageUrl)}
-    if (urlArray.slice(0).includes(pageUrl) == false) { //checks if the link already exists
+    if(bSkipToday)
+    {
         addLinkElement(pageUrl);
     }
-    else {
-        var index = urlArray.indexOf(pageUrl);
-        urlArray.splice(index, 1); //Remove 1 item from urlArray
-        linksArray.splice(index, 1); //Remove 1 item from linksArray
-        addLinkElement(pageUrl);
+    else
+    {
+        if (urlArray.slice(0).includes(pageUrl) == false) { //checks if the link already exists
+            addLinkElement(pageUrl);
+        }
+        else {
+            var index = urlArray.indexOf(pageUrl);
+            urlArray.splice(index, 1); //Remove 1 item from urlArray
+            linksArray.splice(index, 1); //Remove 1 item from linksArray
+            addLinkElement(pageUrl);
+        }
     }
 }
 
 function addLinkElement(pageUrl) {
-    var parent = document.getElementsByClassName("rm-title-display")[0]; //snags the page title
-    if(debugMode){console.log(parent)}
-    if(pageUrl == 'https://roamresearch.com/#/app/samdynamics') { //checks if they are on daily notes page
-        createLinkElement(parent, pageUrl, 0);
+    if(bSkipToday)
+    {
+        createLinkElement(null, pageUrl, 3);
     }
-    else if(parent != null) {  // gets page name if not on daily pages
-        var children = parent.children[0];
-        createLinkElement(children, pageUrl, 1);
-    }
-    else { // checks if the user is zoomed into a bullet
-        var parent = document.getElementsByClassName("zoom-path-view")[0];
-        var children = parent.children[0].children[0].children[0];
-        createLinkElement(children, pageUrl, 2);
+    else
+    {
+        var parent = document.getElementsByClassName("rm-title-display")[0]; //snags the page title
+        if(debugMode){console.log(parent)}
+        if(pageUrl == 'https://roamresearch.com/#/app/samdynamics') { //checks if they are on daily notes page
+            createLinkElement(parent, pageUrl, 0);
+        }
+        else if(parent != null) {  // gets page name if not on daily pages
+            var children = parent.children[0];
+            createLinkElement(children, pageUrl, 1);
+        }
+        else { // checks if the user is zoomed into a bullet
+            var parent = document.getElementsByClassName("zoom-path-view")[0];
+            var children = parent.children[0].children[0].children[0];
+            createLinkElement(children, pageUrl, 2);
+        }
     }
 }
 
@@ -116,29 +133,32 @@ function createLinkElement(children, pageUrl, urlCase) {
     if(debugMode){console.log(linksArray)}
     if(debugMode){console.log(todayArray)}
 
-    var lastNine = pageUrl.substr(pageUrl.length - 9); //Get last 9 characters of page name to use as ID since it is ID of page in URL
-    if(urlCase == 0) {var innerChild = "<span style='color: #FF5E00;'>✹</span> Daily Notes" }
-    else if(urlCase == 1) { var innerChild = children.innerText.substring(0, 25) }
-    else if(urlCase == 2) { var innerChild =  "<span style='color: #0D9BDB;'>🞇</span> " + children.innerText.substring(0, 20) }
-    var linkElement = "<a id='" + lastNine + "' href='" + pageUrl + "' class='recentLink' style='padding: 0 10px;'>" + innerChild + "</a>"; //adds <a> element to array, maximum 25 chars, increase substring size if you wish
-    bThisIsToday = false
-
-    if(bFoundToday == false && urlCase == 1)
+    if(!bSkipToday)
     {
-        if(convertToDate(innerChild) == getTodayDate())
+        var lastNine = pageUrl.substr(pageUrl.length - 9); //Get last 9 characters of page name to use as ID since it is ID of page in URL
+        if(urlCase == 0) {var innerChild = "<span style='color: #FF5E00;'>✹</span> Daily Notes" }
+        else if(urlCase == 1) { var innerChild = children.innerText.substring(0, 25) }
+        else if(urlCase == 2) { var innerChild =  "<span style='color: #0D9BDB;'>🞇</span> " + children.innerText.substring(0, 20) }
+        var linkElement = "<a id='" + lastNine + "' href='" + pageUrl + "' class='recentLink' style='padding: 0 10px;'>" + innerChild + "</a>"; //adds <a> element to array, maximum 25 chars, increase substring size if you wish
+        var bThisIsToday = false
+
+        if(bFoundToday == false && urlCase == 1)
         {
-            var linkElementToday = "<a id='" + 'todayDate' + "' href='" + pageUrl + "' class='recentLink' style='padding: 0 10px;'>" + innerChild + "</a>";
-            bFoundToday = true;
-            bThisIsToday = true
-            todayArray.push(linkElementToday);
-            todayArray.push(pageUrl);
+            if(convertToDate(innerChild) == getTodayDate())
+            {
+                var linkElementToday = "<a id='" + 'todayDate' + "' href='" + pageUrl + "' class='recentLink' style='padding: 0 10px;'>" + innerChild + "</a>";
+                bFoundToday = true;
+                bThisIsToday = true
+                todayArray.push(linkElementToday);
+                todayArray.push(pageUrl);
+            }
         }
-    }
 
-    if(bThisIsToday == false)
-    {
-        urlArray.unshift(pageUrl); //Unshift adds item to start of array
-        linksArray.unshift(linkElement);
+        if(bThisIsToday == false)
+        {
+            urlArray.unshift(pageUrl); //Unshift adds item to start of array
+            linksArray.unshift(linkElement);
+        }
     }
 
     linksArray = linksArray.slice(0, maxLinks); //reduces the array to 7 link max, increase if you wish
@@ -147,14 +167,22 @@ function createLinkElement(children, pageUrl, urlCase) {
     //if you assign an array to another variable and modify that variable's array elements, the original array is also modified.
         //So instead you can use the slice() method which copies them as a new array and their own values (instead of references)
         //https://www.dyn-web.com/javascript/arrays/value-vs-reference.php
-    var arrayToLoad = linksArray.slice(0);
+    arrayToLoad = linksArray.slice(0);
 
     if(bFoundToday)
     {
         arrayToLoad.push(todayArray[0]);
     }
 
-    breadCrumbDiv.innerHTML = arrayToLoad.slice(1).join("‣"); //puts the <a> array into the breadCrumbDiv; don't show first one as current page
+    if(!bSkipToday)
+    {
+        breadCrumbDiv.innerHTML = arrayToLoad.slice(1).join("‣"); //puts the <a> array into the breadCrumbDiv; don't show first one as current page
+    }
+    else
+    {
+        breadCrumbDiv.innerHTML = arrayToLoad.slice(0).join("‣"); //puts the <a> array into the breadCrumbDiv; show first one as well since today page already pinned
+    }
+    
     var linkElements = document.getElementsByClassName("recentLink");
     for(i=0; i<linkElements.length; i++){
         var linkNumber = "<span style='color: #0087FF; padding-right: 3px;' class='linkNumber'>" + (i+1).toString() + "</span>";
@@ -181,10 +209,17 @@ function hotKeyEvent(zEvent) {
 }
 
 function clickLink(n) {
-    var linkToClick = linksArray[n];
+    if(bSkipToday){n = n-1}
+    if(debugMode){console.log(n)}
+    if(debugMode){console.log(arrayToLoad.length)}
+    var linkToClick = arrayToLoad[n];
+    if(debugMode){console.log(arrayToLoad)}
+    if(debugMode){console.log(linkToClick)}
     if(linkToClick != null) {
         var linkId = linkToClick.substring(7, 16)
+        if(debugMode){console.log(linkId)}
         var someLink = document.getElementById(linkId);
+        if(debugMode){console.log(someLink)}
         simulateClick(someLink);
     }
 }
@@ -203,4 +238,4 @@ var simulateClick = function (elem) {
 //Load the first time so the current page gets added to the breadcrumbs
 if(debugMode){console.log('loaded first time')}
 timedFunction()
-}
+};
