@@ -207,8 +207,8 @@ function hotKeyEvent(zEvent) {
     if (zEvent.altKey  &&  zEvent.key === "6") { clickLink(6); }
     if (zEvent.altKey  &&  zEvent.key === "7") { clickLink(7); }
     if (zEvent.altKey  &&  zEvent.key === "8") { clickLink(8); }
-    if (zEvent.altKey  &&  zEvent.key === "w" && arrayToLoad.length > 0) { clickLink(-99); }
-    if (zEvent.altKey  &&  zEvent.key === "o" && arrayToLoad.length > 0) { clickLink(99); }
+    if (zEvent.altKey  &&  zEvent.key === "w") { clickLink(-99); }
+    if (zEvent.altKey  &&  zEvent.key === "o") { clickLink(99); }
 }
 
 function clickLink(n) {
@@ -232,7 +232,7 @@ function clickLink(n) {
     if(linkToClick != null) {
         var linkId = linkToClick.substring(7, 16)
         var someLink = document.getElementById(linkId);
-        simulateClick(someLink);
+        if(someLink){simulateClick(someLink);}
     }
 }
 
