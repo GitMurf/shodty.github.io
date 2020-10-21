@@ -206,20 +206,31 @@ function hotKeyEvent(zEvent) {
     if (zEvent.altKey  &&  zEvent.key === "6") { clickLink(6); }
     if (zEvent.altKey  &&  zEvent.key === "7") { clickLink(7); }
     if (zEvent.altKey  &&  zEvent.key === "8") { clickLink(8); }
+    if (zEvent.altKey  &&  zEvent.key === "w" && arrayToLoad.length > 0) { clickLink(-99); }
+    if (zEvent.altKey  &&  zEvent.key === "o" && arrayToLoad.length > 0) { clickLink(99); }
 }
 
 function clickLink(n) {
-    if(bSkipToday){n = n-1}
-    if(debugMode){console.log(n)}
-    if(debugMode){console.log(arrayToLoad.length)}
+    if(n == 99)
+    {
+        n = arrayToLoad.length-1
+    }
+    else
+    {
+        if(bSkipToday)
+        {
+            if(n == -99){n = 0}else{n = n-1}
+        }
+        else
+        {
+            if(n == -99){n = 1}
+        }
+    }
+
     var linkToClick = arrayToLoad[n];
-    if(debugMode){console.log(arrayToLoad)}
-    if(debugMode){console.log(linkToClick)}
     if(linkToClick != null) {
         var linkId = linkToClick.substring(7, 16)
-        if(debugMode){console.log(linkId)}
         var someLink = document.getElementById(linkId);
-        if(debugMode){console.log(someLink)}
         simulateClick(someLink);
     }
 }
